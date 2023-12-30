@@ -7,12 +7,13 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+
 const Profile = () => {
   const fileRef = useRef(null);
   const { currentUser } = useSelector((state) => state.user);
   const [file, setFile] = useState(undefined);
   const [filePerc, setFilePerc] = useState(0);
-  const [fileUploadError, setFileUploadError] = useState(false);
+  const [fileUploadError, setFileUploadError] = useState(null);
   const [formData, setFormData] = useState({});
 
   // firebase storage rules
@@ -27,20 +28,24 @@ const Profile = () => {
     }
   }, [file]);
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = (efile) => {
     const storage = getStorage(app);
-    const fileName = new Date().getTime() + e.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, e);
+    const fileName = new Date().getTime() + efile.name; // to make the file name unique we added date as differentor
+
+    const storageRef = ref(storage, fileName); //used to for storage refrence
+
+    const uploadTask = uploadBytesResumable(storageRef, efile);
+
     uploadTask.on(
       "state_changed",
       (snapshot) => {
+        // pice of information from each state change
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setFilePerc(Math.round(progress));
       },
       (error) => {
-        setFileUploadError(true);
+        setFileUploadError(error.message);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
@@ -56,12 +61,14 @@ const Profile = () => {
         <input
           onChange={(e) => setFile(e.target.files[0])}
           type="file"
-          ref={fileRef}
+          ref={fileRef} /*This would be reffered on clicking on image icon */
           hidden
-          accept="image/*"
+          accept="image/*" /*This will allow only to accept the image */
         />
         <img
-          onClick={() => fileRef.current.click()}
+          onClick={() =>
+            fileRef.current.click()
+          } /*On clicking image this will click the input file */
           src={formData.avatar || currentUser.avatar}
           alt="profile"
           className="rounded-full object-cover h-24 w-24 cursor-pointer self-center mt-2 border-2 hover:border-slate-300 hover:shadow-lg"
