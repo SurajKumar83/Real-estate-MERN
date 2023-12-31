@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   getDownloadURL,
   getStorage,
@@ -7,14 +7,21 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+} from "../redux/user/UserSlice.js";
 
 const Profile = () => {
   const fileRef = useRef(null);
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
   const [file, setFile] = useState(undefined);
   const [filePerc, setFilePerc] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(null);
   const [formData, setFormData] = useState({});
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const dispatch = useDispatch();
 
   // firebase storage rules
   // allow read;
@@ -54,10 +61,37 @@ const Profile = () => {
       }
     );
   };
+
+  const hangleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      dispatch(updateUserSuccess(data));
+      setUpdateSuccess(true);
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
   return (
     <div className="p-3 max-w-lg mx-auto">
-      <h1 className="text-3xl font-serif text-center my-7">Profile</h1>
-      <form className="flex flex-col gap-3">
+      <h1 className="text-3xl font-serif text-center my-5">Profile</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           onChange={(e) => setFile(e.target.files[0])}
           type="file"
@@ -69,9 +103,9 @@ const Profile = () => {
           onClick={() =>
             fileRef.current.click()
           } /*On clicking image this will click the input file */
-          src={formData.avatar || currentUser.avatar}
+          src={formData?.avatar || currentUser.avatar}
           alt="profile"
-          className="rounded-full object-cover h-24 w-24 cursor-pointer self-center mt-2 border-2 hover:border-slate-300 hover:shadow-lg"
+          className="rounded-full object-cover h-24 w-24 cursor-pointer self-center mt-2 border-2 hover:border-red-300 hover:shadow-lg"
         />
         <p className="text-sm self-center">
           {fileUploadError ? (
@@ -90,6 +124,8 @@ const Profile = () => {
           type="text"
           name="username"
           id="username"
+          defaultValue={currentUser.username}
+          onChange={hangleChange}
           placeholder="Username"
           className="border p-2 rounded-lg"
         />
@@ -97,18 +133,25 @@ const Profile = () => {
           type="email"
           name="email"
           id="email"
+          defaultValue={currentUser.email}
+          onChange={hangleChange}
           placeholder="Email"
           className="border p-2 rounded-lg"
         />
         <input
           type="password"
+          defaultValue={currentUser.password}
+          onChange={hangleChange}
           name="password"
           id="password"
           placeholder="Password"
           className="border p-2 rounded-lg"
         />
-        <button className="bg-slate-700 text-white rounded-lg p-2 uppercase hover:opacity-95 font-serif disabled:opacity-80 hover:shadow-lg">
-          Update
+        <button
+          disabled={loading}
+          className="bg-slate-700 text-white rounded-lg p-2 uppercase hover:opacity-95 font-serif disabled:opacity-80 hover:shadow-lg"
+        >
+          {loading ? "Loading..." : "Update"}
         </button>
       </form>
       <div className="flex justify-between px-3 mt-5">
@@ -119,6 +162,17 @@ const Profile = () => {
           Log Out
         </button>
       </div>
+      {error ? (
+        <p className="text-red-700 mt-2 text-center font-serif font-">
+          {error + " 🤔"}
+        </p>
+      ) : updateSuccess ? (
+        <p className="text-green-700 mt-2 text-center font-serif font-">
+          {"User is Updated Successfully! 🎉"}
+        </p>
+      ) : (
+        ""
+      )}
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { app } from "../firebase";
 import { useDispatch } from "react-redux";
 import { signInSuccess } from "../redux/user/UserSlice";
 import { useNavigate } from "react-router-dom";
+
 const OAuth = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,13 +33,14 @@ const OAuth = () => {
       console.log("could not sign in with Google", error);
     }
   };
+
   return (
     <button
       onClick={handleGoogleClick}
       type="button" // this will prevent from getting submitted by default
       className="bg-red-700 text-white p-2 rounded-lg uppercase hover:opacity-95 hover:shadow-lg  font-serif"
     >
-      Continue with Google
+      Continue With Google
     </button>
   );
 };
