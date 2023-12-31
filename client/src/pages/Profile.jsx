@@ -11,6 +11,12 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure,
+  signOutUserStart,
+  signOutUserSuccess,
+  signOutUserFailure,
 } from "../redux/user/UserSlice.js";
 
 const Profile = () => {
@@ -88,6 +94,38 @@ const Profile = () => {
       dispatch(updateUserFailure(error.message));
     }
   };
+
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      // req to the api
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
+
+  const handleSignout = async () => {
+    try {
+      dispatch(signOutUserStart());
+      const res = await fetch("/api/auth/signout");
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(signOutUserFailure(error.message));
+        return;
+      }
+      dispatch(signOutUserSuccess(data));
+    } catch (error) {
+      dispatch(signOutUserFailure(error.message));
+    }
+  };
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-serif text-center my-5">Profile</h1>
@@ -155,11 +193,17 @@ const Profile = () => {
         </button>
       </form>
       <div className="flex justify-between px-3 mt-5">
-        <button className="text-red-700 cursor-pointer font-sans font-semibold hover:underline hover:text-red-800">
+        <button
+          onClick={handleDeleteUser}
+          className="text-red-700 cursor-pointer font-sans font-semibold hover:underline hover:text-red-800"
+        >
           Delete account
         </button>
-        <button className="text-red-700 cursor-pointer font-sans font-semibold hover:underline hover:text-red-800">
-          Log Out
+        <button
+          onClick={handleSignout}
+          className="text-red-700 cursor-pointer font-sans font-semibold hover:underline hover:text-red-800"
+        >
+          Sign Out
         </button>
       </div>
       {error ? (
