@@ -29,7 +29,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const dispatch = useDispatch();
-
+  console.log(formData);
   // firebase storage rules
   // allow read;
   // allow write: if
