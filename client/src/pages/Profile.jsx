@@ -32,7 +32,7 @@ const Profile = () => {
   const [loadingList, setLoadingList] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
-  console.log(userListings);
+
   // firebase storage rules
   // allow read;
   // allow write: if
@@ -148,8 +148,25 @@ const Profile = () => {
       setLoadingList(false);
     }
   };
+  const handleListingDelete = async (listingid) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingid}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setUserListings((prev) =>
+        prev.filter((listing) => listing._id !== listingid)
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
   return (
-    <div className="p-3 max-w-lg mx-auto">
+    <div className="p-3 max-w-lg mx-auto font-serif">
       <h1 className="text-3xl font-serif text-center my-5">Profile</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
@@ -274,7 +291,10 @@ const Profile = () => {
               <p>{listing.name}</p>
             </Link>
             <div className="flex flex-col font-semibold">
-              <button className="text-red-700 uppercase hover:underline">
+              <button
+                onClick={() => handleListingDelete(listing._id)}
+                className="text-red-700 uppercase hover:underline"
+              >
                 Delete
               </button>
               <button className="text-green-700 uppercase hover:underline">
