@@ -29,7 +29,7 @@ export const signin = async (req, res, next) => {
     const validPassword = bcryptjs.compareSync(password, validUser.password); // this will check the password against the validuser in decrypted form by bcryptjs
     if (!validPassword) {
       // check the password against the validuser in decrypted form
-      return next(errorHandler(401, "Wrong Credentials!")); // call the error handler middleware
+      return next(errorHandler(401, "Bad Credentials!")); // call the error handler middleware
     }
     // this will generate the jwt authentication token for the user in encrypted form
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
