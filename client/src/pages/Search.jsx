@@ -14,7 +14,7 @@ const Search = () => {
   });
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState([]);
-  console.log(listings);
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -50,6 +50,11 @@ const Search = () => {
       const searchQuery = urlParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
+      if (data.length > 8) {
+        setShowMore(true);
+      } else {
+        setShowMore(false);
+      }
       setListings(data);
       setLoading(false);
     };
@@ -101,6 +106,19 @@ const Search = () => {
     } catch (error) {
       return error;
     }
+  };
+  const onShowMoreClick = async () => {
+    const numberOfListings = listings.length;
+    const startIndex = numberOfListings;
+    const urlParams = new URLSearchParams(location.search);
+    urlParams.set("startIndex", startIndex);
+    const searchQuery = urlParams.toString();
+    const res = await fetch(`/api/listing/get?${searchQuery}`);
+    const data = await res.json();
+    if (data.length < 9) {
+      setShowMore(false);
+    }
+    setListings([...listings, ...data]);
   };
   return (
     <div className="flex flex-col md:flex-row">
@@ -199,7 +217,7 @@ const Search = () => {
               <option value="createdAt_asc">Oldest</option>
             </select>
           </div>
-          <button  className="bg-slate-700 font-semibold p-3 text-white rounded-lg uppercase hover:opacity-95">
+          <button className="bg-slate-700 font-semibold p-3 text-white rounded-lg uppercase hover:opacity-95">
             Search
           </button>
         </form>
@@ -222,6 +240,14 @@ const Search = () => {
             listings.map((listing) => (
               <ListingItem key={listing._id} listing={listing} />
             ))}
+          {showMore && (
+            <button
+              onClick={onShowMoreClick}
+              className="text-green-700 hover:underline p-7 text-center w-full"
+            >
+              Show More
+            </button>
+          )}
         </div>
       </div>
     </div>
