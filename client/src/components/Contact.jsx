@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 
-const Contact = (params) => {
-  const listing = params.listing;
+const Contact = ({ listing }) => {
   const [landlord, setLandlord] = useState(null);
   const [message, setMessage] = useState("");
 
@@ -34,27 +34,30 @@ const Contact = (params) => {
             <span className="font-semibold font-serif ">
               {listing.name.toLowerCase()}
             </span>
-            
           </p>
           <textarea
-              name="message"
-              id="message"
-              rows="2"
-              value={message}
-              onChange={onChange}
-              placeholder="Enter your message here..."
-              className="w-full border p-3 rounded-lg resize-none"
-            ></textarea>
-            <Link
-              to={`mailto:${landlord.email}?subject=Regarding${listing.name}&body=${message}`}
-              className="bg-slate-700 text-white text-center p-2 uppercase rounded-lg hover:opacity-95"
-            >
-              Send Message
-            </Link>
+            name="message"
+            id="message"
+            rows="2"
+            value={message}
+            onChange={onChange}
+            placeholder="Enter your message here..."
+            className="w-full border p-3 rounded-lg resize-none"
+          ></textarea>
+          <Link
+            to={`mailto:${landlord.email}?subject=Regarding${listing.name}&body=${message}`}
+            className="bg-slate-700 text-white text-center p-2 uppercase rounded-lg hover:opacity-95"
+          >
+            Send Message
+          </Link>
         </div>
       )}
     </div>
   );
+};
+
+Contact.propTypes = {
+  listing: PropTypes.object,
 };
 
 export default Contact;
