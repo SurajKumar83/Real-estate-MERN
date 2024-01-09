@@ -85,7 +85,7 @@ export const getListings = async (req, res, next) => {
     const order = req.query.order || "desc";
 
     const listings = await Listing.find({
-      // options "i" used to not bother about capital or smaller of search, regex means search everywhere weather string or substring
+      // options "i" used to not bother about capital or small letter of search, regex means search everywhere weather string or substring
       name: { $regex: searchTerm, $options: "i" },
       offer,
       furnished,
